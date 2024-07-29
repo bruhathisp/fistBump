@@ -2,7 +2,7 @@
   "name": "thumbs-up-api",
   "version": "1.0.0",
   "description": "A standalone thumbs up button API",
-  "main": "server.js",
+  "main": "server.mjs",
   "type": "module",
   "scripts": {
     "start": "node server.js"
