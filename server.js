@@ -6,111 +6,54 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
-
 app.use(bodyParser.json());
 
-// Root URL route
-app.get('/', (req, res) => {
-    res.send('Thumbs Up API is running');
-});
+const GLIDE_API_TOKEN = process.env.GLIDE_API_TOKEN;
+const GLIDE_APP_ID = process.env.GLIDE_APP_ID;
+const GLIDE_TABLE_ID = process.env.GLIDE_TABLE_ID;
 
-// Set your Glide token as an environment variable
-const GLIDE_TOKEN = process.env.GLIDE_TOKEN;
-const GLIDE_APP_ID = '3NS0DhxzYXaoZwaKdBxr';
-const GLIDE_TABLE_ID = 'native-table-UhHK0rnmscKJImqA62m6';
+const GLIDE_API_URL = `https://api.glideapps.com/${GLIDE_APP_ID}/tables/${GLIDE_TABLE_ID}`;
 
-// Function to get rows from Glide table
-const getRows = async (query) => {
-    const response = await axios.post(
-        `https://api.glideapps.com/v1/tables/${GLIDE_TABLE_ID}/rows/query`,
-        { query },
-        {
-            headers: {
-                'Authorization': `Bearer ${GLIDE_TOKEN}`,
-                'Content-Type': 'application/json',
-            },
-        }
-    );
-    return response.data.rows;
-};
+// Middleware to set headers for Glide API requests
+axios.defaults.headers.common['Authorization'] = `Bearer ${GLIDE_API_TOKEN}`;
 
-// Function to update a row in Glide table
-const updateRow = async (rowId, updateData) => {
-    const response = await axios.patch(
-        `https://api.glideapps.com/v1/tables/${GLIDE_TABLE_ID}/rows/${rowId}`,
-        updateData,
-        {
-            headers: {
-                'Authorization': `Bearer ${GLIDE_TOKEN}`,
-                'Content-Type': 'application/json',
-            },
-        }
-    );
-    return response.data;
-};
-
-// Endpoint to increment thumbs up count
-app.post('/api/thumbs-up', async (req, res) => {
-    const { eventId, userId } = req.body;
-
-    if (!eventId || !userId) {
-        return res.status(400).json({ error: 'Event ID and User ID are required' });
-    }
+// Update thumbs-up count API
+app.post('/thumbs-up', async (req, res) => {
+    const { eventId, userName } = req.body;
 
     try {
-        // Fetch the event row by eventId
-        const rows = await getRows({ filters: [{ column: 'Uet7T', value: eventId }] });
-        if (rows.length === 0) {
-            return res.status(404).json({ error: 'Event not found' });
+        // Fetch the event data
+        const response = await axios.get(`${GLIDE_API_URL}/rows`);
+        const rows = response.data;
+
+        const eventRow = rows.find(row => row.eventId === eventId);
+        if (!eventRow) {
+            return res.status(404).json({ message: 'Event not found' });
         }
 
-        const row = rows[0];
-        const currentThumbsUpCount = parseInt(row.pO9Zw, 10) || 0;
-        let thumbsUpUsers = row.MC4Bt ? row.MC4Bt.split(',') : [];
-
-        if (!thumbsUpUsers.includes(userId)) {
-            thumbsUpUsers.push(userId);
-            const newThumbsUpCount = currentThumbsUpCount + 1;
-
-            // Update the row with the new thumbs up count and users
-            await updateRow(row.id, {
-                pO9Zw: newThumbsUpCount.toString(),
-                MC4Bt: thumbsUpUsers.join(','),
-            });
-
-            res.json({ eventId, newCount: newThumbsUpCount, users: thumbsUpUsers });
-        } else {
-            res.status(400).json({ error: 'User has already given a thumbs up for this event' });
+        const thumbsUpUsers = eventRow.thumbsUpUsers ? JSON.parse(eventRow.thumbsUpUsers) : [];
+        if (thumbsUpUsers.includes(userName)) {
+            return res.status(400).json({ message: 'User has already given thumbs up for this event' });
         }
+
+        // Update the thumbs up count and users
+        thumbsUpUsers.push(userName);
+        const thumbsUpCount = parseInt(eventRow.thumbsUpCount || '0') + 1;
+
+        await axios.patch(`${GLIDE_API_URL}/rows/${eventRow.id}`, {
+            thumbsUpCount: thumbsUpCount.toString(),
+            thumbsUpUsers: JSON.stringify(thumbsUpUsers)
+        });
+
+        res.json({ message: 'Thumbs up count updated successfully' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Error updating thumbs up count:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 
-// Endpoint to get the current thumbs up count and users
-app.get('/api/thumbs-up/:eventId', async (req, res) => {
-    const { eventId } = req.params;
-
-    try {
-        // Fetch the event row by eventId
-        const rows = await getRows({ filters: [{ column: 'Uet7T', value: eventId }] });
-        if (rows.length === 0) {
-            return res.status(404).json({ error: 'Event not found' });
-        }
-
-        const row = rows[0];
-        const currentThumbsUpCount = parseInt(row.pO9Zw, 10) || 0;
-        const thumbsUpUsers = row.MC4Bt ? row.MC4Bt.split(',') : [];
-
-        res.json({ eventId, count: currentThumbsUpCount, users: thumbsUpUsers });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-app.listen(port, () => {
-    console.log(`Thumbs up API server running at http://localhost:${port}`);
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
