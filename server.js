@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const glide = require('@glideapps/tables');
+import * as glide from "@glideapps/tables";
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -11,7 +11,7 @@ const wistfulHospitalTable = glide.table({
     app: "3NS0DhxzYXaoZwaKdBxr",
     table: "native-table-UhHK0rnmscKJImqA62m6",
     columns: {
-        sNo: { type: "string", name: "Name" },
+        sno: { type: "string", name: "Name" },
         eventName: { type: "string", name: "HeVcI" },
         eventId: { type: "string", name: "Uet7T" },
         eventHeadline: { type: "string", name: "KOyac" },
@@ -21,7 +21,7 @@ const wistfulHospitalTable = glide.table({
         mailId: { type: "string", name: "CxJtT" },
         phoneNumber: { type: "string", name: "te8cn" },
         thumbsUpCount: { type: "string", name: "pO9Zw" },
-        thumbsUpUsers: { type: "string", name: "thumbsUpUsers" } // Add this new column to store user IDs
+        thumbsUpUsers: { type: "string", name: "MC4Bt" }
     }
 });
 
