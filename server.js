@@ -23,11 +23,11 @@ const GLIDE_TABLE_ID = 'native-table-UhHK0rnmscKJImqA62m6';
 // Function to get rows from Glide table
 const getRows = async (query) => {
     const response = await axios.post(
-        https://api.glideapps.com/v1/tables/${GLIDE_TABLE_ID}/rows/query,
+        `https://api.glideapps.com/v1/tables/${GLIDE_TABLE_ID}/rows/query`,
         { query },
         {
             headers: {
-                'Authorization': Bearer ${GLIDE_TOKEN},
+                'Authorization': `Bearer ${GLIDE_TOKEN}`,
                 'Content-Type': 'application/json',
             },
         }
@@ -38,11 +38,11 @@ const getRows = async (query) => {
 // Function to update a row in Glide table
 const updateRow = async (rowId, updateData) => {
     const response = await axios.patch(
-        https://api.glideapps.com/v1/tables/${GLIDE_TABLE_ID}/rows/${rowId},
+        `https://api.glideapps.com/v1/tables/${GLIDE_TABLE_ID}/rows/${rowId}`,
         updateData,
         {
             headers: {
-                'Authorization': Bearer ${GLIDE_TOKEN},
+                'Authorization': `Bearer ${GLIDE_TOKEN}`,
                 'Content-Type': 'application/json',
             },
         }
@@ -112,5 +112,5 @@ app.get('/api/thumbs-up/:eventId', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(Thumbs up API server running at http://localhost:${port});
+    console.log(`Thumbs up API server running at http://localhost:${port}`);
 });
