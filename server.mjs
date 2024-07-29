@@ -1,14 +1,23 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const glide = require('@glideapps/tables');
+import express from 'express';
+import bodyParser from 'body-parser';
+import * as glide from "@glideapps/tables";
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
+// Root URL route
+app.get('/', (req, res) => {
+    res.send('Thumbs Up API is running');
+});
+
+// Set your Glide token as an environment variable or directly in the code
+const GLIDE_TOKEN = process.env.GLIDE_TOKEN || 'your-glide-token';
+
+// Create the Glide table instance
 const wistfulHospitalTable = glide.table({
-    token: "26531c61-3158-4ff3-90c7-70b91aa829f0",
+    token: GLIDE_TOKEN,
     app: "3NS0DhxzYXaoZwaKdBxr",
     table: "native-table-UhHK0rnmscKJImqA62m6",
     columns: {
@@ -36,7 +45,7 @@ app.post('/api/thumbs-up', async (req, res) => {
 
     try {
         // Fetch the event row by eventId
-        const rows = await wistfulHospitalTable.filter({ eventId });
+        const rows = await wistfulHospitalTable.get(q => q.where("eventId", "=", eventId));
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Event not found' });
         }
@@ -71,7 +80,7 @@ app.get('/api/thumbs-up/:eventId', async (req, res) => {
 
     try {
         // Fetch the event row by eventId
-        const rows = await wistfulHospitalTable.filter({ eventId });
+        const rows = await wistfulHospitalTable.get(q => q.where("eventId", "=", eventId));
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Event not found' });
         }
