@@ -12,7 +12,7 @@ const GLIDE_API_TOKEN = process.env.GLIDE_API_TOKEN;
 const GLIDE_APP_ID = process.env.GLIDE_APP_ID;
 const GLIDE_TABLE_ID = process.env.GLIDE_TABLE_ID;
 
-const GLIDE_API_URL = `https://api.glideapps.com/${GLIDE_APP_ID}/tables/${GLIDE_TABLE_ID}/rows`;
+const GLIDE_API_URL = `https://api.glideapp.io/api/function/mutateTables`;
 
 // Middleware to set headers for Glide API requests
 axios.defaults.headers.common['Authorization'] = `Bearer ${GLIDE_API_TOKEN}`;
@@ -24,16 +24,25 @@ app.post('/thumbs-up', async (req, res) => {
 
     try {
         // Fetch the event data
-        const response = await axios.get(GLIDE_API_URL);
-        const rows = response.data;
+        console.log('Fetching event data...');
+        const response = await axios.post(GLIDE_API_URL, {
+            appID: GLIDE_APP_ID,
+            mutations: [
+                {
+                    kind: "get-rows-from-table",
+                    tableName: GLIDE_TABLE_ID
+                }
+            ]
+        });
+        const rows = response.data.results;
 
-        const eventRow = rows.find(row => row.eventId === eventId);
+        const eventRow = rows.find(row => row.columnValues.Uet7T === eventId);
         if (!eventRow) {
             console.error('Event not found:', eventId);
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        const thumbsUpUsers = eventRow.thumbsUpUsers ? JSON.parse(eventRow.thumbsUpUsers) : [];
+        const thumbsUpUsers = eventRow.columnValues.MC4Bt ? JSON.parse(eventRow.columnValues.MC4Bt) : [];
         if (thumbsUpUsers.includes(userName)) {
             console.error('User has already given thumbs up for this event:', userName);
             return res.status(400).json({ message: 'User has already given thumbs up for this event' });
@@ -41,11 +50,21 @@ app.post('/thumbs-up', async (req, res) => {
 
         // Update the thumbs up count and users
         thumbsUpUsers.push(userName);
-        const thumbsUpCount = parseInt(eventRow.thumbsUpCount || '0') + 1;
+        const thumbsUpCount = parseInt(eventRow.columnValues.pO9Zw || '0') + 1;
 
-        await axios.patch(`${GLIDE_API_URL}/${eventRow.id}`, {
-            thumbsUpCount: thumbsUpCount.toString(),
-            thumbsUpUsers: JSON.stringify(thumbsUpUsers)
+        await axios.post(GLIDE_API_URL, {
+            appID: GLIDE_APP_ID,
+            mutations: [
+                {
+                    kind: "update-row-in-table",
+                    tableName: GLIDE_TABLE_ID,
+                    rowID: eventRow.id,
+                    columnValues: {
+                        pO9Zw: thumbsUpCount.toString(),
+                        MC4Bt: JSON.stringify(thumbsUpUsers)
+                    }
+                }
+            ]
         });
 
         res.json({ message: 'Thumbs up count updated successfully' });
