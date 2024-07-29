@@ -1,7 +1,6 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import * as glide from "@glideapps/tables";
-
+const express = require('express');
+const bodyParser = require('body-parser');
+const glide = require('@glideapps/tables');
 const app = express();
 const port = process.env.PORT || 3000;
 
