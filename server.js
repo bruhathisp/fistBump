@@ -7,8 +7,59 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
-app.post('/mutateTables', async (req, res) => {
-  const data = req.body;
+// In-memory store to track thumbs up
+const thumbsUpStore = {};
+
+app.get('/getThumbsUp/:eventId', (req, res) => {
+  const { eventId } = req.params;
+  const eventThumbsUp = thumbsUpStore[eventId] || { count: 0, users: [] };
+  res.status(200).json(eventThumbsUp);
+});
+
+app.post('/thumbsUp', async (req, res) => {
+  const { eventId, userName } = req.body;
+
+  if (!eventId || !userName) {
+    return res.status(400).json({ error: 'eventId and userName are required' });
+  }
+
+  // Initialize thumbs up for the event if not present
+  if (!thumbsUpStore[eventId]) {
+    thumbsUpStore[eventId] = { count: 0, users: [] };
+  }
+
+  // Check if the user has already thumbs-upped the event
+  if (thumbsUpStore[eventId].users.includes(userName)) {
+    return res.status(400).json({ error: 'User has already thumbs-upped this event' });
+  }
+
+  // Update the thumbs up count and list of users
+  thumbsUpStore[eventId].count += 1;
+  thumbsUpStore[eventId].users.push(userName);
+
+  // Update the Glide table
+  const data = {
+    appID: "3NS0DhxzYXaoZwaKdBxr",
+    mutations: [
+      {
+        kind: "add-row-to-table",
+        tableName: "native-table-UhHK0rnmscKJImqA62m6",
+        columnValues: {
+          "Name": "sno",
+          "HeVcI": "eventName",
+          "Uet7T": "eventId",
+          "KOyac": "eventHeadline",
+          "favEH": "eventDescription",
+          "3WVqe": "moreInformation",
+          "0GQOQ": userName,
+          "CxJtT": "mailId",
+          "te8cn": "phoneNumber",
+          "pO9Zw": thumbsUpStore[eventId].count,
+          "MC4Bt": thumbsUpStore[eventId].users.join(',')
+        }
+      }
+    ]
+  };
 
   try {
     const response = await axios.post('https://api.glideapp.io/api/function/mutateTables', data, {
