@@ -2,10 +2,9 @@
   "name": "thumbs-up-api",
   "version": "1.0.0",
   "description": "A standalone thumbs up button API",
-  "main": "server.mjs",
-  "type": "module",
+  "main": "server-wrapper.js",
   "scripts": {
-    "start": "node server.mjs"
+    "start": "node server-wrapper.js"
   },
   "dependencies": {
     "express": "^4.18.2",
