@@ -14,9 +14,8 @@ const GLIDE_TABLE_ID = process.env.GLIDE_TABLE_ID;
 
 const GLIDE_API_URL = `https://api.glideapp.io/api/function/mutateTables`;
 
-// Middleware to set headers for Glide API requests
 axios.defaults.headers.common['Authorization'] = `Bearer ${GLIDE_API_TOKEN}`;
-axios.defaults.headers.common['Content-Type'] = 'application/json';
+axios.defaults.headers.common['Content-Type'] = 'application/json`;
 
 // Update thumbs-up count API
 app.post('/thumbs-up', async (req, res) => {
@@ -24,7 +23,6 @@ app.post('/thumbs-up', async (req, res) => {
 
     try {
         // Fetch the event data
-        console.log('Fetching event data...');
         const response = await axios.post(GLIDE_API_URL, {
             appID: GLIDE_APP_ID,
             mutations: [
@@ -70,16 +68,56 @@ app.post('/thumbs-up', async (req, res) => {
         res.json({ message: 'Thumbs up count updated successfully' });
     } catch (error) {
         if (error.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
             console.error('Error response data:', error.response.data);
             console.error('Error response status:', error.response.status);
             console.error('Error response headers:', error.response.headers);
         } else if (error.request) {
-            // The request was made but no response was received
             console.error('Error request data:', error.request);
         } else {
-            // Something happened in setting up the request that triggered an Error
+            console.error('Error message:', error.message);
+        }
+        console.error('Error config:', error.config);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Custom Data Endpoint
+app.post('/add-custom-data', async (req, res) => {
+    const { sno, eventName, eventId, eventHeadline, eventDescription, moreInformation, userName, mailId, phoneNumber } = req.body;
+
+    try {
+        const response = await axios.post(GLIDE_API_URL, {
+            appID: GLIDE_APP_ID,
+            mutations: [
+                {
+                    kind: "add-row-to-table",
+                    tableName: GLIDE_TABLE_ID,
+                    columnValues: {
+                        Name: sno,
+                        HeVcI: eventName,
+                        Uet7T: eventId,
+                        KOyac: eventHeadline,
+                        favEH: eventDescription,
+                        3WVqe: moreInformation,
+                        0GQOQ: userName,
+                        CxJtT: mailId,
+                        te8cn: phoneNumber,
+                        pO9Zw: "0",
+                        MC4Bt: "[]"
+                    }
+                }
+            ]
+        });
+
+        res.json({ message: 'Custom data added successfully', data: response.data });
+    } catch (error) {
+        if (error.response) {
+            console.error('Error response data:', error.response.data);
+            console.error('Error response status:', error.response.status);
+            console.error('Error response headers:', error.response.headers);
+        } else if (error.request) {
+            console.error('Error request data:', error.request);
+        } else {
             console.error('Error message:', error.message);
         }
         console.error('Error config:', error.config);
