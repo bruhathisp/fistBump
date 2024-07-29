@@ -1,3 +1,4 @@
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
@@ -43,6 +44,10 @@ app.post('/thumbs-up', async (req, res) => {
         await axios.patch(`${GLIDE_API_URL}/rows/${eventRow.id}`, {
             thumbsUpCount: thumbsUpCount.toString(),
             thumbsUpUsers: JSON.stringify(thumbsUpUsers)
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
 
         res.json({ message: 'Thumbs up count updated successfully' });
@@ -53,7 +58,7 @@ app.post('/thumbs-up', async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
