@@ -19,7 +19,17 @@ app.get('/getThumbsUp/:eventId', (req, res) => {
 });
 
 app.post('/thumbsUp', async (req, res) => {
-  const { eventId, userName } = req.body;
+  const {
+    eventId,
+    userName,
+    eventHeadline,
+    eventDescription,
+    moreInformation,
+    imageURL,
+    url,
+    subheaderText,
+    headerText
+  } = req.body;
 
   if (!eventId || !userName) {
     return res.status(400).json({ error: 'eventId and userName are required' });
@@ -47,17 +57,18 @@ app.post('/thumbsUp', async (req, res) => {
         kind: "add-row-to-table",
         tableName: "native-table-UhHK0rnmscKJImqA62m6",
         columnValues: {
-          "Name": "sno",
-          "HeVcI": "eventName",
-          "Uet7T": "eventId",
-          "KOyac": "eventHeadline",
-          "favEH": "eventDescription",
-          "3WVqe": "moreInformation",
-          "0GQOQ": userName,
-          "CxJtT": "mailId",
-          "te8cn": "phoneNumber",
-          "pO9Zw": thumbsUpStore[eventId].count,
-          "MC4Bt": thumbsUpStore[eventId].users.join(',')
+          "sno": userName,  // Assuming "Name" is replaced with userName
+          "eventName": eventId,
+          "eventId": eventId,
+          "eventHeadline": eventHeadline,
+          "eventDescription": eventDescription,
+          "moreInformation": moreInformation,
+          "imageURL": imageURL,
+          "url": url,
+          "sectionSubheader": subheaderText,
+          "sectionHeader": headerText,
+          "thumbsUpCount": thumbsUpStore[eventId].count,
+          "thumbsUpUsers": thumbsUpStore[eventId].users.join(',')
         }
       }
     ]
@@ -77,5 +88,5 @@ app.post('/thumbsUp', async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(Server running at http://localhost:${port});
 });
