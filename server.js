@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -13,27 +12,20 @@ app.use(bodyParser.json());
 // In-memory store to track thumbs up
 const thumbsUpStore = {};
 
+// Endpoint to get thumbs up data
 app.get('/getThumbsUp/:eventId', (req, res) => {
   const { eventId } = req.params;
   const eventThumbsUp = thumbsUpStore[eventId] || { count: 0, users: [] };
   res.status(200).json(eventThumbsUp);
 });
 
+// Endpoint to handle thumbs up and additional event data
 app.post('/thumbsUp', async (req, res) => {
-  const {
-    eventId,
-    userName,
-    eventHeadline,
-    eventDescription,
-    moreInformation,
-    imageURL,
-    url,
-    subheaderText,
-    headerText
-  } = req.body;
+  const { eventId, userName, eventHeadline, eventDescription, moreInformation, imageURL, url, subheaderText, headerText } = req.body;
 
-  if (!eventId || !userName) {
-    return res.status(400).json({ error: 'eventId and userName are required' });
+  // Validate required fields
+  if (!eventId || !userName || !eventHeadline || !eventDescription || !moreInformation) {
+    return res.status(400).json({ error: 'eventId, userName, eventHeadline, eventDescription, and moreInformation are required' });
   }
 
   // Initialize thumbs up for the event if not present
@@ -58,18 +50,17 @@ app.post('/thumbsUp', async (req, res) => {
         kind: "add-row-to-table",
         tableName: "native-table-UhHK0rnmscKJImqA62m6",
         columnValues: {
-          "sno": userName,  // Assuming "Name" is replaced with userName
-          "eventName": eventId,
-          "eventId": eventId,
-          "eventHeadline": eventHeadline,
-          "eventDescription": eventDescription,
-          "moreInformation": moreInformation,
-          "imageURL": imageURL,
-          "url": url,
-          "sectionSubheader": subheaderText,
-          "sectionHeader": headerText,
-          "thumbsUpCount": thumbsUpStore[eventId].count,
-          "thumbsUpUsers": thumbsUpStore[eventId].users.join(',')
+          "Name": userName, // Assuming this maps to userName
+          "HeVcI": eventHeadline, // Mapping based on assumed column identifiers
+          "Uet7T": eventId,
+          "KOyac": headerText || eventDescription, // Assuming headerText maps to eventDescription
+          "favEH": eventDescription, // As a fallback
+          "3WVqe": moreInformation,
+          "0GQOQ": userName, // Mapping based on assumed column identifiers
+          "CxJtT": "N/A", // Placeholder for email
+          "te8cn": "N/A", // Placeholder for phone number
+          "pO9Zw": thumbsUpStore[eventId].count,
+          "MC4Bt": thumbsUpStore[eventId].users.join(',')
         }
       }
     ]
@@ -79,7 +70,7 @@ app.post('/thumbsUp', async (req, res) => {
     const response = await axios.post('https://api.glideapp.io/api/function/mutateTables', data, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer 26531c61-3158-4ff3-90c7-70b91aa829f0',
+        'Authorization': 'Bearer 26531c61-3158-4ff3-90c7-70b91aa829f0', // Replace with actual token
       },
     });
     res.status(200).json(response.data);
